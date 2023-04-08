@@ -83,12 +83,11 @@ def make_players_table(data, cur, conn):
 
 def nationality_search(countries, cur, conn):
     ret1 = []
-    for item in countries:
-        ret = cur.execute(
-            "SELECT Players.name, Players.position_id, Players.nationality FROM Players WHERE Players.nationality = ?", (item)
-        )
-        ret1.append(ret)
-    return ret1
+    ret = cur.execute(
+        "SELECT Players.name, Players.position_id, Players.nationality FROM Players WHERE Players.nationality IN ?", (countries,)
+    )
+    ret1.append(cur.fetchall())
+    return ret1[0]
 
 ## [TASK 3]: 10 points
 # finish the function birthyear_nationality_search
@@ -109,7 +108,7 @@ def nationality_search(countries, cur, conn):
 def birthyear_nationality_search(age, country, cur, conn):
     temp = 2023 - age
     ret = cur.execute(
-        "SELECT Players.name, Players.nationality, Players.birthyear FROM Players WHERE Players.nationality = ? AND Players.birthyear < ?", (country, temp)
+        "SELECT Players.name, Players.nationality, Players.birthyear FROM Players WHERE Players.nationality = ? AND Players.birthyear < ?", (country, temp,)
     )
     conn.commit()
     li = []
@@ -136,14 +135,18 @@ def birthyear_nationality_search(age, country, cur, conn):
 
 def position_birth_search(position, age, cur, conn):
     temp = 2023 - age
-    val = cur.execute(
-        'SELECT Players.name, Positions.position, Players.birthyear FROM Players JOIN Positions ON Positions.position = ? WHERE Players.birthyear > ?', (position,temp)
+    luci = cur.execute(
+        'SELECT Positions.id FROM Positions WHERE Positions.position = ?', (position,)
     )
-    conn.commit()
+    for iteml in luci:
+        tem = int(iteml[0])
+        break
+    val = cur.execute(
+        'SELECT Players.name, Positions.position, Players.birthyear FROM Players JOIN Positions ON Positions.id = Players.position_id WHERE Players.birthyear > ? AND Positions.id = ?', (temp, tem,)
+    )
     li = []
     for item in val:
-        if(item[2] > temp):
-            li.append(item)
+        li.append(item)
     return li
 
 
