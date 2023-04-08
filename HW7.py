@@ -88,7 +88,8 @@ def nationality_search(countries, cur, conn):
             "SELECT Players.name, Players.position_id, Players.nationality FROM Players WHERE Players.nationality = ?", (item,)
         )
         conn.commit()
-    return cur.fetchall()
+        ret1 += cur.fetchall()
+    return ret1
 
 ## [TASK 3]: 10 points
 # finish the function birthyear_nationality_search
@@ -227,6 +228,10 @@ class TestAllMethods(unittest.TestCase):
         self.assertEqual(y[2],('Fred', 2, 'Brazil'))
         self.assertEqual(y[0][1], 3)
 
+        #added
+        z = sorted(nationality_search(['Brazil', 'England'], self.cur, self.conn))
+        self.assertEqual(len(z), 14)
+
     def test_birthyear_nationality_search(self):
 
         a = birthyear_nationality_search(24, 'England', self.cur, self.conn)
@@ -250,19 +255,12 @@ class TestAllMethods(unittest.TestCase):
     
     # test extra credit
     def test_make_winners_table(self):
-        self.cur2.execute('SELECT * from Winners')
-        winners_list = self.cur2.fetchall()
-
         pass
 
     def test_make_seasons_table(self):
-        self.cur2.execute('SELECT * from Seasons')
-        seasons_list = self.cur2.fetchall()
-
         pass
 
     def test_winners_since_search(self):
-
         pass
 
 
