@@ -1,8 +1,8 @@
 
-# Your name:
-# Your student id:
-# Your email:
-# List who you have worked with on this project:
+# Your name: Luciana Solorzano
+# Your student id: 82482379
+# Your email: lusolorz@umich.edu
+# List who you have worked with on this project: N/A
 
 import unittest
 import sqlite3
@@ -53,7 +53,23 @@ def make_positions_table(data, cur, conn):
 #     created for you -- see make_positions_table above for details.
 
 def make_players_table(data, cur, conn):
-    pass
+    cur.execute('DROP TABLE IF EXISTS Players')
+    cur.execute('CREATE TABLE Players (id INTEGER PRIMARY KEY, name TEXT, position_id INTEGER, birthyear INTEGER, nationality TEXT)')
+    conn.commit()
+    li = []
+    players_dict = (data.get('squad', None))
+    position_id = cur.execute(
+        """SELECT Positions.id, Positions.position FROM Positions"""
+    )
+    temp = {}
+    for it in position_id:
+        temp[it[1]] = it[0]
+
+    for item in players_dict:
+        posit = temp[item['position']]
+        birthyr = item['dateOfBirth'][:4]
+        cur.execute("""INSERT OR IGNORE INTO Players (id, name, position_id, birthyear, nationality) VALUES (?, ?, ?, ?, ?)""", (int(item['id']), item['name'], int(posit), int(birthyr), item['nationality']))
+        conn.commit()
 
 ## [TASK 2]: 10 points
 # Finish the function nationality_search
@@ -66,7 +82,13 @@ def make_players_table(data, cur, conn):
         # the player's name, their position_id, and their nationality.
 
 def nationality_search(countries, cur, conn):
-    pass
+    ret1 = []
+    for item in countries:
+        ret = cur.execute(
+            "SELECT Players.name, Players.position_id, Players.nationality FROM Players WHERE Players.nationality = ?", (item)
+        )
+        ret1.append(ret)
+    return ret1
 
 ## [TASK 3]: 10 points
 # finish the function birthyear_nationality_search
@@ -85,7 +107,15 @@ def nationality_search(countries, cur, conn):
 
 
 def birthyear_nationality_search(age, country, cur, conn):
-    pass
+    temp = 2023 - age
+    ret = cur.execute(
+        "SELECT Players.name, Players.nationality, Players.birthyear FROM Players WHERE Players.nationality = ? AND Players.birthyear < ?", (country, temp)
+    )
+    conn.commit()
+    li = []
+    for item in ret:
+        li.append(item)
+    return li
 
 ## [TASK 4]: 15 points
 # finish the function position_birth_search
@@ -105,7 +135,16 @@ def birthyear_nationality_search(age, country, cur, conn):
     # HINT: You'll have to use JOIN for this task.
 
 def position_birth_search(position, age, cur, conn):
-       pass
+    temp = 2023 - age
+    val = cur.execute(
+        'SELECT Players.name, Positions.position, Players.birthyear FROM Players JOIN Positions ON Positions.position = ? WHERE Players.birthyear > ?', (position,temp)
+    )
+    conn.commit()
+    li = []
+    for item in val:
+        if(item[2] > temp):
+            li.append(item)
+    return li
 
 
 # [EXTRA CREDIT]
@@ -203,6 +242,7 @@ class TestAllMethods(unittest.TestCase):
         c = sorted(position_birth_search("Defence", 23, self.cur, self.conn))
         self.assertEqual(len(c), 1)
         self.assertEqual(c, [('Teden Mengi', 'Defence', 2002)])
+    
     
     # test extra credit
     def test_make_winners_table(self):
