@@ -58,15 +58,12 @@ def make_players_table(data, cur, conn):
     conn.commit()
     li = []
     players_dict = (data.get('squad', None))
-    position_id = cur.execute(
-        """SELECT Positions.id, Positions.position FROM Positions"""
-    )
-    temp = {}
-    for it in position_id:
-        temp[it[1]] = it[0]
 
     for item in players_dict:
-        posit = temp[item['position']]
+        positi = cur.execute(
+            "SELECT Positions.id FROM Positions WHERE Positions.position = ?", (item['position'],)
+        )
+        posit = cur.fetchone()[0]
         birthyr = item['dateOfBirth'][:4]
         cur.execute("""INSERT OR IGNORE INTO Players (id, name, position_id, birthyear, nationality) VALUES (?, ?, ?, ?, ?)""", (int(item['id']), item['name'], int(posit), int(birthyr), item['nationality']))
         conn.commit()
@@ -113,10 +110,7 @@ def birthyear_nationality_search(age, country, cur, conn):
         "SELECT Players.name, Players.nationality, Players.birthyear FROM Players WHERE Players.nationality = ? AND Players.birthyear < ?", (country, temp,)
     )
     conn.commit()
-    li = []
-    for item in ret:
-        li.append(item)
-    return li
+    return cur.fetchall()
 
 ## [TASK 4]: 15 points
 # finish the function position_birth_search
@@ -146,10 +140,7 @@ def position_birth_search(position, age, cur, conn):
     val = cur.execute(
         'SELECT Players.name, Positions.position, Players.birthyear FROM Players JOIN Positions ON Positions.id = Players.position_id WHERE Players.birthyear > ? AND Positions.id = ?', (temp, tem,)
     )
-    li = []
-    for item in val:
-        li.append(item)
-    return li
+    return cur.fetchall()
 
 
 # [EXTRA CREDIT]
