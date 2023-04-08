@@ -83,11 +83,12 @@ def make_players_table(data, cur, conn):
 
 def nationality_search(countries, cur, conn):
     ret1 = []
-    ret = cur.execute(
-        "SELECT Players.name, Players.position_id, Players.nationality FROM Players WHERE Players.nationality IN ?", (countries,)
-    )
-    ret1.append(cur.fetchall())
-    return ret1[0]
+    for item in countries:
+        ret = cur.execute(
+            "SELECT Players.name, Players.position_id, Players.nationality FROM Players WHERE Players.nationality = ?", (item,)
+        )
+        conn.commit()
+    return cur.fetchall()
 
 ## [TASK 3]: 10 points
 # finish the function birthyear_nationality_search
